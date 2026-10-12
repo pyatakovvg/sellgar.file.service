@@ -13,6 +13,7 @@
     "tsBuildInfoFile": "./dist/tsconfig.build.tsbuildinfo",
     "rootDir": "./src",
     "skipLibCheck": true,
+    "types": ["node", "jest"],
     "ignoreDeprecations": "6.0",
     "strictNullChecks": false,
     "noImplicitAny": false,

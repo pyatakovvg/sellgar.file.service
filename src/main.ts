@@ -33,6 +33,27 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [
+        {
+          port: config.get('AMQP_PORT'),
+          hostname: config.get('AMQP_HOSTNAME'),
+          username: config.get('AMQP_USERNAME'),
+          password: config.get('AMQP_PASSWORD'),
+        },
+      ],
+      queue: config.getOrThrow<string>('AMQP_SERVICE_QUEUE') + '.events',
+      queueOptions: { durable: true },
+      exchange: config.getOrThrow<string>('AMQP_EVENTS_EXCHANGE'),
+      exchangeType: 'topic',
+      routingKey: 'brand.images.removed',
+      noAck: false,
+      persistent: true,
+    },
+  });
+
   await app.startAllMicroservices();
 
   await app.listen(port, () => {

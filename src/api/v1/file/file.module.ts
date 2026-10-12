@@ -8,6 +8,7 @@ import { FileRepository } from './repository/file.repository';
 import { FileController } from './controller/file.controller';
 import { FileModel } from './file.model';
 import { FolderModel } from '../folder/folder.model';
+import { BrandImageRemovedController } from './controller/brand-image-removed.controller';
 
 @Module({
   imports: [
@@ -36,13 +37,35 @@ import { FolderModel } from '../folder/folder.model';
             },
             exchange: config.get('AMQP_EVENTS_EXCHANGE'),
             exchangeType: 'topic',
+            wildcards: true,
+          },
+        }),
+        inject: [ConfigService],
+      },
+      {
+        imports: [ConfigModule],
+        name: 'MEDIA_SERVICE',
+        useFactory: (config: ConfigService) => ({
+          transport: Transport.RMQ,
+          options: {
+            urls: [
+              {
+                port: config.get('AMQP_PORT'),
+                hostname: config.get('AMQP_HOSTNAME'),
+                username: config.get('AMQP_USERNAME'),
+                password: config.get('AMQP_PASSWORD'),
+              },
+            ],
+            persistent: true,
+            queue: config.getOrThrow<string>('AMQP_MEDIA_SRV_COMMAND_QUEUE'),
+            queueOptions: { durable: true },
           },
         }),
         inject: [ConfigService],
       },
     ]),
   ],
-  controllers: [FileController],
+  controllers: [FileController, BrandImageRemovedController],
   providers: [FileService, FileRepository, ConfigService],
 })
 export class FileModule {}

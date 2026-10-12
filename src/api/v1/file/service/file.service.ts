@@ -13,6 +13,7 @@ export class FileService {
     private readonly config: ConfigService,
     private readonly fileRepository: FileRepository,
     @Inject('FILE_SERVICE') private readonly rmqService: ClientProxy,
+    @Inject('MEDIA_SERVICE') private readonly mediaService: ClientProxy,
   ) {}
 
   async getAll(folderUuid: string) {
@@ -73,9 +74,21 @@ export class FileService {
       return file;
     }
 
+    await firstValueFrom(this.mediaService.send({ cmd: 'media.object.delete' }, { storageKey: file.storageKey }));
+
     return this.fileRepository.updateUploadState(uuid, {
       status: 'deleted',
       expiresAt: null,
     });
+  }
+
+  async deleteByUuids(uuids: string[]): Promise<void> {
+    for (const uuid of uuids) {
+      try {
+        await this.deleteByUuid(uuid);
+      } catch (error) {
+        if (!(error instanceof NotFoundException)) throw error;
+      }
+    }
   }
 }
