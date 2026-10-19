@@ -11,7 +11,7 @@ export class BrandImageRemovedController {
 
   constructor(private readonly fileService: FileService) {}
 
-  @EventPattern('brand.images.removed')
+  @EventPattern<string>('brand.images.removed')
   async removed(@Payload() payload: unknown, @Ctx() context: RmqContext): Promise<void> {
     const channel = context.getChannelRef();
     const message = context.getMessage();
