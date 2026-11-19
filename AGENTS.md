@@ -33,3 +33,11 @@
 ## Проверка
 
 Основная проверка: `yarn workspace @service/file run build`.
+
+## Деплой
+
+- Исходники и Yarn root находятся в `code/`; команды выполнять оттуда.
+- Dockerfile, `.github/` CI и `helm/` находятся в корне. Рабочая ветка `development`, выпуск `master`.
+- CI публикует проверенный image и Helm OCI-пакет среды; Argo автоматически отслеживает dev-пакеты. Prod публикуется только ручным release workflow.
+- ConfigMap монтирует `/app/.env`, credentials поступают только из Secret refs. Одна реплика, внутренний порт 8080.
+- Явные миграции запускает Job перед Deployment; synchronize отключён.

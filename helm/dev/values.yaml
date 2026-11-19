@@ -1,0 +1,19 @@
+replicas: 1
+configmaps:
+- nameOverride: file-service-env
+  enabled: true
+  filename: .env
+  data: |
+    NODE_ENV=production
+    PORT=8080
+    BASE_URL=http://file-service:8080
+    AMQP_HOSTNAME=rabbitmq
+    AMQP_PORT=5672
+    AMQP_SERVICE_QUEUE=file_srv.service.queue
+    AMQP_MEDIA_SRV_COMMAND_QUEUE=media_srv.command.queue
+    AMQP_EVENTS_EXCHANGE=event.exchange
+    AMQP_FILE_SRV_FILE_CREATE=file_srv.file.create
+    AMQP_FILE_SRV_FILE_UPDATE=file_srv.file.update
+    DATABASE_HOST=postgresql-rw
+    DATABASE_PORT=5432
+    DATABASE_DATABASE_NAME=file_srv

@@ -3,16 +3,18 @@ import { ConfigService } from '@nestjs/config';
 import { Logger, ValidationPipe } from '@nestjs/common';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 
+import { HealthService } from './health/health.service';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const logger = new Logger();
-  const config = new ConfigService();
   const app = await NestFactory.create(AppModule);
 
-  const port = config.get<number>('PORT');
+  app.enableShutdownHooks();
+  const config = app.get(ConfigService);
+  const port = Number(config.get('PORT') ?? 8080);
 
-  app.connectMicroservice<MicroserviceOptions>({
+  const commands = app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
       urls: [
@@ -33,7 +35,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
 
-  app.connectMicroservice<MicroserviceOptions>({
+  const events = app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
       urls: [
@@ -54,6 +56,13 @@ async function bootstrap() {
     },
   });
 
+  const health = app.get(HealthService);
+  commands.status.subscribe((status) =>
+    health.setConsumerConnected('commands', status === 'connected' || status === 'unblocked'),
+  );
+  events.status.subscribe((status) =>
+    health.setConsumerConnected('events', status === 'connected' || status === 'unblocked'),
+  );
   await app.startAllMicroservices();
 
   await app.listen(port, () => {
