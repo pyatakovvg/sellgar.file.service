@@ -1,8 +1,5 @@
 replicas: 1
-configmaps:
-- nameOverride: file-service-env
-  enabled: true
-  filename: .env
+environmentFile:
   data: |
     NODE_ENV=production
     PORT=8080
