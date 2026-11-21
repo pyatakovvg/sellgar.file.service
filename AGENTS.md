@@ -38,12 +38,12 @@
 
 - Исходники и Yarn root находятся в `code/`; команды выполнять оттуда.
 - Dockerfile, `.github/` CI и `helm/` находятся в корне. Рабочая ветка `development`, выпуск `master`.
-- CI использует общий reusable workflow: build → publish → параллельно test/migrate → deploy. Ошибка test/migrate блокирует deploy; управление приложением принадлежит Helm CI, платформой — Argo CD.
+- CI использует общий reusable workflow: unit → build → publish → migrate → deploy. Ошибка unit блокирует build; ошибка migrate блокирует deploy; управление приложением принадлежит Helm CI, платформой — Argo CD.
 - ConfigMap монтирует `/app/.env`, credentials поступают только из Secret refs. Одна реплика, внутренний порт 8080.
 - Явные миграции запускает Job перед Deployment; synchronize отключён.
 
 ## Контракт CI/CD
 
-- Отдельный Docker target `tests` и job `test` обязательны; деплой зависит от успешных тестов.
-- Есть отдельный `migration` image и job `migrate`; test и migrate идут параллельно до deploy.
+- Отдельный Docker target `tests` и job `unit` обязательны; сборка и деплой зависят от успешных юнит-тестов.
+- Есть отдельный `migration` image и job `migrate`; unit запускается до build, migrate — после publish.
 - CI/CD и конфигурация описаны в разделе «CI и доставка» README. Python/smoke wrappers удалены; команды Helm/kubectl видны в общих workflows.
